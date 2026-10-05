@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('Top Sách Mượn Nhiều Nhất', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 text-warning"><i class="fa-solid fa-fire me-2"></i>Báo Cáo Top Sách Mượn Nhiều Nhất</h3>
+            <p class="text-muted">Thống kê các đầu sách được độc giả yêu thích và mượn nhiều nhất</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm p-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 80px;">Thứ Hạng</th>
+                        <th>Mã ISBN</th>
+                        <th>Tên Đầu Sách</th>
+                        <th class="text-end">Tổng Lượt Mượn</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="tb, stat : ${topBooks}">
+                        <td>
+                            <span class="badge rounded-circle p-2 fw-bold"
+                                  th:classappend="${stat.count == 1} ? 'bg-warning text-dark' : (${stat.count == 2} ? 'bg-secondary text-white' : (${stat.count == 3} ? 'bg-danger text-white' : 'bg-light text-dark border'))"
+                                  th:text="${stat.count}" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">1</span>
+                        </td>
+                        <td class="font-monospace small" th:text="${tb.isbn}">ISBN</td>
+                        <td class="fw-bold fs-6">
+                            <a th:href="@{/books/{id}(id=${tb.bookId})}" class="text-decoration-none text-dark" th:text="${tb.title}">Tên sách</a>
+                        </td>
+                        <td class="text-end">
+                            <span class="badge bg-primary fs-6 rounded-pill" th:text="${tb.totalBorrowed} + ' lượt'">0 lượt</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(topBooks)}">
+                        <td colspan="4" class="text-center text-muted py-4">Chưa có dữ liệu thống kê mượn sách.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

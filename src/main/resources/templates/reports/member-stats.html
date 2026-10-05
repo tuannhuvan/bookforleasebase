@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('Thống Kê Mượn Theo Thành Viên', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 text-success"><i class="fa-solid fa-user-check me-2"></i>Báo Cáo Thống Kê Theo Thành Viên</h3>
+            <p class="text-muted">Tổng hợp số lượt mượn sách của từng độc giả đăng ký trong hệ thống</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm p-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#ID Thành Viên</th>
+                        <th>Họ và Tên</th>
+                        <th>Email Liên Hệ</th>
+                        <th class="text-end">Tổng Số Lượt Mượn</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="m : ${memberStats}">
+                        <td class="fw-bold" th:text="'#' + ${m.memberId}">#1</td>
+                        <td class="fw-semibold" th:text="${m.fullName}">Họ và tên</td>
+                        <td th:text="${m.email}">Email</td>
+                        <td class="text-end">
+                            <span class="badge bg-success fs-6 rounded-pill" th:text="${m.totalBorrowings} + ' lần'">0 lần</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(memberStats)}">
+                        <td colspan="4" class="text-center text-muted py-4">Chưa có dữ liệu thống kê thành viên.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

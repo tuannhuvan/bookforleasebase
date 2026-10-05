@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('Chi Tiết Phiếu Mượn', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="card shadow-sm p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h4 class="fw-bold mb-0" th:text="'Chi Tiết Phiếu Mượn #' + ${borrowing.id}">#1</h4>
+                        <div class="small text-muted" th:text="'Ngày lập: ' + ${#temporals.format(borrowing.borrowDate, 'dd/MM/yyyy')}">01/01/2026</div>
+                    </div>
+                    <div>
+                        <a th:if="${borrowing.status.name() != 'RETURNED'}" th:href="@{/borrowings/{id}/return(id=${borrowing.id})}" class="btn btn-success btn-custom me-1"><i class="fa-solid fa-rotate-left me-1"></i> Trả Sách</a>
+                        <a href="/borrowings" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left"></i> Danh sách</a>
+                    </div>
+                </div>
+                <hr>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="card bg-light p-3 border-0">
+                            <div class="text-muted small">Thành Viên Mượn</div>
+                            <div class="fw-bold fs-6" th:text="${borrowing.memberName}">Tên</div>
+                            <div class="small text-muted" th:text="${borrowing.memberEmail}">Email</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light p-3 border-0">
+                            <div class="text-muted small">Hạn Trả Sách (14 ngày)</div>
+                            <div class="fw-bold fs-6" th:text="${#temporals.format(borrowing.dueDate, 'dd/MM/yyyy')}">Hạn trả</div>
+                            <div th:if="${borrowing.overdueDays > 0}" class="small text-danger fw-bold" th:text="'Quá hạn ' + ${borrowing.overdueDays} + ' ngày'">Quá hạn</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light p-3 border-0">
+                            <div class="text-muted small">Trạng Thái & Phạt Quá Hạn</div>
+                            <div>
+                                <span th:if="${borrowing.status.name() == 'BORROWED'}" class="badge bg-primary">ĐANG MƯỢN</span>
+                                <span th:if="${borrowing.status.name() == 'PARTIAL_RETURNED'}" class="badge bg-info text-dark">TRẢ TỪNG PHẦN</span>
+                                <span th:if="${borrowing.status.name() == 'RETURNED'}" class="badge bg-success">ĐÃ TRẢ HẾT</span>
+                                <span th:if="${borrowing.status.name() == 'OVERDUE'}" class="badge bg-danger">QUÁ HẠN</span>
+                            </div>
+                            <div class="fw-bold fs-6 mt-1" th:classappend="${borrowing.totalFine > 0} ? 'text-danger' : 'text-success'"
+                                 th:text="${#numbers.formatDecimal(borrowing.totalFine, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-list-check me-2"></i>Danh Sách Sách Mượn</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Mã ISBN</th>
+                                <th>Tên Sách</th>
+                                <th class="text-center">Số Lượng Mượn</th>
+                                <th class="text-center">Đã Trả</th>
+                                <th class="text-end">Phạt Quá Hạn Dòng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="d, stat : ${borrowing.details}">
+                                <td th:text="${stat.count}">1</td>
+                                <td class="font-monospace small" th:text="${d.bookIsbn}">ISBN</td>
+                                <td class="fw-semibold" th:text="${d.bookTitle}">Tên sách</td>
+                                <td class="text-center fw-bold" th:text="${d.quantity}">1</td>
+                                <td class="text-center fw-bold text-success" th:text="${d.returnedQuantity}">0</td>
+                                <td class="text-end fw-bold" th:classappend="${d.fineAmount > 0} ? 'text-danger' : 'text-muted'"
+                                    th:text="${#numbers.formatDecimal(d.fineAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

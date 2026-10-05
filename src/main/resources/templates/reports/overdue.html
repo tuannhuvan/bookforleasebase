@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('Báo Cáo Phiếu Quá Hạn', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 text-danger"><i class="fa-solid fa-clock-rotate-left me-2"></i>Báo Cáo Phiếu Mượn Quá Hạn</h3>
+            <p class="text-muted">Danh sách các phiếu mượn đã vượt quá hạn 14 ngày chưa được trả hoàn tất</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm p-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#Mã Phiếu</th>
+                        <th>Thành Viên</th>
+                        <th>Ngày Mượn</th>
+                        <th>Hạn Trả</th>
+                        <th>Số Ngày Quá Hạn</th>
+                        <th>Tiền Phạt Dự Kiến (5k/ngày/cuốn)</th>
+                        <th class="text-end">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="r : ${overduePage.content}">
+                        <td class="fw-bold" th:text="'#' + ${r.borrowingId}">#1</td>
+                        <td>
+                            <div class="fw-semibold" th:text="${r.memberName}">Tên</div>
+                            <div class="small text-muted" th:text="${r.memberEmail}">Email</div>
+                        </td>
+                        <td th:text="${#temporals.format(r.borrowDate, 'dd/MM/yyyy')}">01/01/2026</td>
+                        <td th:text="${#temporals.format(r.dueDate, 'dd/MM/yyyy')}">15/01/2026</td>
+                        <td>
+                            <span class="badge bg-danger fs-6" th:text="${r.overdueDays} + ' ngày'">1 ngày</span>
+                        </td>
+                        <td>
+                            <span class="fw-bold text-danger fs-6"
+                                  th:text="${#numbers.formatDecimal(r.estimatedFine, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</span>
+                        </td>
+                        <td class="text-end">
+                            <a th:href="@{/borrowings/{id}/return(id=${r.borrowingId})}" class="btn btn-sm btn-outline-danger">
+                                <i class="fa-solid fa-rotate-left"></i> Thu Hồi / Trả Sách
+                            </a>
+                        </td>
+                    </tr>
+                    <tr th:if="${overduePage.totalElements == 0}">
+                        <td colspan="7" class="text-center text-muted py-4"><i class="fa-solid fa-circle-check text-success me-1"></i> Không có phiếu mượn nào bị quá hạn.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${overduePage.totalPages > 1}" class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+            <span class="small text-muted" th:text="'Trang ' + (${overduePage.number} + 1) + ' / ' + ${overduePage.totalPages}"></span>
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item" th:classappend="${overduePage.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/reports/overdue(page=${overduePage.number - 1})}">Trước</a>
+                </li>
+                <li th:each="i : ${#numbers.sequence(0, overduePage.totalPages - 1)}" class="page-item" th:classappend="${i == overduePage.number} ? 'active'">
+                    <a class="page-link" th:href="@{/reports/overdue(page=${i})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${overduePage.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/reports/overdue(page=${overduePage.number + 1})}">Sau</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>

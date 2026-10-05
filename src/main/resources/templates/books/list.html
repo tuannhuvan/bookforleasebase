@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('Quản Lý Sách', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">Danh Sách Sách Thư Viện</h3>
+            <p class="text-muted">Quản lý kho sách, mã ISBN, tổng tồn kho và số lượng khả dụng</p>
+        </div>
+        <a href="/books/new" class="btn btn-primary btn-custom">
+            <i class="fa-solid fa-plus me-1"></i> Thêm Sách Mới
+        </a>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card shadow-sm p-3 mb-4">
+        <form th:action="@{/books}" method="get" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                    <input type="text" name="keyword" th:value="${keyword}" class="form-control border-start-0" placeholder="Tìm theo Tên sách, Tác giả, ISBN...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="categoryId" class="form-select">
+                    <option value="">-- Chọn Thể Loại --</option>
+                    <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}" th:selected="${cat.id == categoryId}"></option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">-- Trạng Thái --</option>
+                    <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}" th:selected="${st == status}"></option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-1">
+                <button type="submit" class="btn btn-primary btn-custom flex-grow-1"><i class="fa-solid fa-filter me-1"></i> Lọc</button>
+                <a href="/books" class="btn btn-outline-secondary btn-custom"><i class="fa-solid fa-rotate-left"></i></a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Book Table Card -->
+    <div class="card shadow-sm p-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ISBN</th>
+                        <th>Tên Sách</th>
+                        <th>Tác Giả</th>
+                        <th>Thể Loại</th>
+                        <th>Khả Dụng / Tổng</th>
+                        <th>Trạng Thái</th>
+                        <th class="text-end">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="book : ${bookPage.content}">
+                        <td class="font-monospace small fw-semibold text-secondary" th:text="${book.isbn}">ISBN</td>
+                        <td>
+                            <a th:href="@{/books/{id}(id=${book.id})}" class="fw-bold text-decoration-none text-dark" th:text="${book.title}">Tên sách</a>
+                        </td>
+                        <td th:text="${book.author}">Tác giả</td>
+                        <td>
+                            <span class="badge bg-light text-dark border" th:text="${book.categoryName != null ? book.categoryName : 'N/A'}">Thể loại</span>
+                        </td>
+                        <td>
+                            <span class="fw-bold" th:classappend="${book.availableQuantity > 0} ? 'text-success' : 'text-danger'" th:text="${book.availableQuantity}">0</span>
+                            <span class="text-muted"> / </span>
+                            <span th:text="${book.totalQuantity}">0</span>
+                        </td>
+                        <td>
+                            <span th:if="${book.status.name() == 'AVAILABLE'}" class="badge bg-success">Sẵn sàng</span>
+                            <span th:if="${book.status.name() == 'INACTIVE'}" class="badge bg-warning text-dark">Ngưng phục vụ</span>
+                            <span th:if="${book.status.name() == 'DELETED'}" class="badge bg-secondary">Đã xóa</span>
+                        </td>
+                        <td class="text-end">
+                            <a th:href="@{/books/{id}(id=${book.id})}" class="btn btn-sm btn-outline-info me-1"><i class="fa-solid fa-eye"></i> Xem</a>
+                            <a th:href="@{/books/{id}/edit(id=${book.id})}" class="btn btn-sm btn-outline-primary me-1"><i class="fa-solid fa-pen-to-square"></i> Sửa</a>
+                            <form th:action="@{/books/{id}/delete(id=${book.id})}" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sách này?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i> Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${bookPage.totalElements == 0}">
+                        <td colspan="7" class="text-center text-muted py-4">Không tìm thấy sách nào phù hợp.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${bookPage.totalPages > 1}" class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+            <span class="small text-muted" th:text="'Trang ' + (${bookPage.number} + 1) + ' / ' + ${bookPage.totalPages} + ' (Tổng ' + ${bookPage.totalElements} + ' bản ghi)'"></span>
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item" th:classappend="${bookPage.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/books(page=${bookPage.number - 1}, keyword=${keyword}, categoryId=${categoryId}, status=${status})}">Trước</a>
+                </li>
+                <li th:each="i : ${#numbers.sequence(0, bookPage.totalPages - 1)}" class="page-item" th:classappend="${i == bookPage.number} ? 'active'">
+                    <a class="page-link" th:href="@{/books(page=${i}, keyword=${keyword}, categoryId=${categoryId}, status=${status})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${bookPage.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/books(page=${bookPage.number + 1}, keyword=${keyword}, categoryId=${categoryId}, status=${status})}">Sau</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>

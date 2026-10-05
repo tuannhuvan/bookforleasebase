@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('Thông Báo Lỗi', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="row justify-content-center py-5">
+        <div class="col-md-6 text-center">
+            <div class="card shadow p-5 border-0 rounded-4">
+                <div class="text-danger mb-3">
+                    <i class="fa-solid fa-triangle-exclamation fa-4x"></i>
+                </div>
+                <h2 class="fw-bold text-dark mb-2" th:text="${status} + ' - ' + ${error}">404 - Lỗi Ràng Buộc Nghiệp Vụ</h2>
+                <p class="fs-5 text-muted mb-4" th:text="${message}">Chi tiết thông báo lỗi sẽ xuất hiện tại đây.</p>
+                <div>
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary me-2"><i class="fa-solid fa-arrow-left me-1"></i> Quay Lại</a>
+                    <a href="/" class="btn btn-primary"><i class="fa-solid fa-house me-1"></i> Về Trang Chủ</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

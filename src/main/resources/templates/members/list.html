@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('Quản Lý Thành Viên', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">Danh Sách Thành Viên Thư Viện</h3>
+            <p class="text-muted">Quản lý thông tin thành viên và khóa/mở khóa tài khoản (BLOCKED không được mượn sách)</p>
+        </div>
+        <a href="/members/new" class="btn btn-primary btn-custom">
+            <i class="fa-solid fa-user-plus me-1"></i> Thêm Thành Viên
+        </a>
+    </div>
+
+    <!-- Filter -->
+    <div class="card shadow-sm p-3 mb-4">
+        <form th:action="@{/members}" method="get" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">-- Lọc theo Trạng Thái --</option>
+                    <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}" th:selected="${st == status}"></option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-custom w-100"><i class="fa-solid fa-filter me-1"></i> Lọc</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="card shadow-sm p-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#ID</th>
+                        <th>Họ và Tên</th>
+                        <th>Email</th>
+                        <th>Số Điện Thoại</th>
+                        <th>Trạng Thái</th>
+                        <th>Ngày Đăng Ký</th>
+                        <th class="text-end">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="m : ${memberPage.content}">
+                        <td class="fw-bold" th:text="${m.id}">1</td>
+                        <td class="fw-semibold" th:text="${m.fullName}">Họ tên</td>
+                        <td th:text="${m.email}">Email</td>
+                        <td th:text="${m.phone != null ? m.phone : '—'}">SĐT</td>
+                        <td>
+                            <span th:if="${m.status.name() == 'ACTIVE'}" class="badge bg-success"><i class="fa-solid fa-user-check me-1"></i>ACTIVE</span>
+                            <span th:if="${m.status.name() == 'BLOCKED'}" class="badge bg-danger"><i class="fa-solid fa-user-slash me-1"></i>BLOCKED</span>
+                        </td>
+                        <td th:text="${m.createdAt != null ? #temporals.format(m.createdAt, 'dd/MM/yyyy HH:mm') : '—'}">Ngày đăng ký</td>
+                        <td class="text-end">
+                            <a th:href="@{/members/{id}/edit(id=${m.id})}" class="btn btn-sm btn-outline-primary me-1"><i class="fa-solid fa-user-pen"></i> Sửa</a>
+                            <form th:action="@{/members/{id}/toggle-status(id=${m.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm" th:classappend="${m.status.name() == 'ACTIVE'} ? 'btn-outline-warning' : 'btn-outline-success'">
+                                    <i th:class="${m.status.name() == 'ACTIVE'} ? 'fa-solid fa-lock' : 'fa-solid fa-lock-open'"></i>
+                                    <span th:text="${m.status.name() == 'ACTIVE'} ? 'Khóa' : 'Mở Khóa'">Khóa</span>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${memberPage.totalElements == 0}">
+                        <td colspan="7" class="text-center text-muted py-4">Chưa có thành viên nào.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${memberPage.totalPages > 1}" class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+            <span class="small text-muted" th:text="'Trang ' + (${memberPage.number} + 1) + ' / ' + ${memberPage.totalPages}"></span>
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item" th:classappend="${memberPage.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/members(page=${memberPage.number - 1}, status=${status})}">Trước</a>
+                </li>
+                <li th:each="i : ${#numbers.sequence(0, memberPage.totalPages - 1)}" class="page-item" th:classappend="${i == memberPage.number} ? 'active'">
+                    <a class="page-link" th:href="@{/members(page=${i}, status=${status})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${memberPage.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/members(page=${memberPage.number + 1}, status=${status})}">Sau</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>

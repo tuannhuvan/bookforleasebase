@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('Chi Tiết Sách', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="fw-bold mb-0">Chi Tiết Sách</h4>
+                    <div>
+                        <a th:href="@{/books/{id}/edit(id=${book.id})}" class="btn btn-sm btn-outline-primary me-1"><i class="fa-solid fa-pen-to-square"></i> Chỉnh sửa</a>
+                        <a href="/books" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-arrow-left"></i> Danh sách</a>
+                    </div>
+                </div>
+                <hr>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="text-muted small">Mã ISBN</div>
+                        <div class="fw-bold font-monospace fs-5 text-primary" th:text="${book.isbn}">ISBN</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Thể Loại</div>
+                        <div class="fw-bold fs-6" th:text="${book.categoryName != null ? book.categoryName : 'Chưa phân loại'}">Thể loại</div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="text-muted small">Tên Sách</div>
+                        <div class="fw-bold fs-4" th:text="${book.title}">Tên sách</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Tác Giả</div>
+                        <div class="fw-semibold fs-6" th:text="${book.author}">Tác giả</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Trạng Thái</div>
+                        <div>
+                            <span th:if="${book.status.name() == 'AVAILABLE'}" class="badge bg-success">Sẵn sàng mượn</span>
+                            <span th:if="${book.status.name() == 'INACTIVE'}" class="badge bg-warning text-dark">Tạm ngưng</span>
+                            <span th:if="${book.status.name() == 'DELETED'}" class="badge bg-secondary">Đã xóa</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card bg-light p-3 border-0">
+                            <div class="text-muted small">Tổng Số Lượng Tồn Kho</div>
+                            <div class="fw-bold fs-3" th:text="${book.totalQuantity}">0</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card bg-light p-3 border-0">
+                            <div class="text-muted small">Số Lượng Khả Dụng</div>
+                            <div class="fw-bold fs-3" th:classappend="${book.availableQuantity > 0} ? 'text-success' : 'text-danger'" th:text="${book.availableQuantity}">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

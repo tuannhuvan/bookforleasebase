@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('Trang Chủ', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Tổng Quan Thư Viện</h2>
+            <p class="text-muted">Bảng điều khiển thông tin và các số liệu thống kê nhanh</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/borrowings/new" class="btn btn-primary btn-custom"><i class="fa-solid fa-plus me-1"></i> Tạo Phiếu Mượn</a>
+            <a href="/books/new" class="btn btn-outline-secondary btn-custom"><i class="fa-solid fa-book-medical me-1"></i> Thêm Sách</a>
+        </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card bg-primary text-white p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50 text-uppercase mb-1">Thể loại</h6>
+                        <h3 class="fw-bold mb-0" th:text="${totalCategories}">0</h3>
+                    </div>
+                    <i class="fa-solid fa-layer-group fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-success text-white p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50 text-uppercase mb-1">Tổng Sách</h6>
+                        <h3 class="fw-bold mb-0" th:text="${totalBooks}">0</h3>
+                    </div>
+                    <i class="fa-solid fa-book fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-info text-white p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50 text-uppercase mb-1">Thành viên</h6>
+                        <h3 class="fw-bold mb-0" th:text="${totalMembers}">0</h3>
+                    </div>
+                    <i class="fa-solid fa-users fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-warning text-dark p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-black-50 text-uppercase mb-1">Lượt Mượn</h6>
+                        <h3 class="fw-bold mb-0" th:text="${totalBorrowings}">0</h3>
+                    </div>
+                    <i class="fa-solid fa-hand-holding-hand fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Recent Overdue -->
+        <div class="col-lg-7">
+            <div class="card p-3 shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-danger mb-0"><i class="fa-solid fa-triangle-exclamation me-2"></i>Phiếu Quá Hạn Cần Xử Lý</h5>
+                    <a href="/reports/overdue" class="btn btn-sm btn-link text-decoration-none">Xem tất cả <i class="fa-solid fa-arrow-right ms-1"></i></a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#ID</th>
+                                <th>Thành viên</th>
+                                <th>Hạn trả</th>
+                                <th>Quá hạn</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="b : ${recentOverdue}">
+                                <td class="fw-bold" th:text="'#' + ${b.borrowingId}">#1</td>
+                                <td>
+                                    <div class="fw-semibold" th:text="${b.memberName}">Tên</div>
+                                    <div class="small text-muted" th:text="${b.memberEmail}">Email</div>
+                                </td>
+                                <td th:text="${#temporals.format(b.dueDate, 'dd/MM/yyyy')}">01/01/2026</td>
+                                <td><span class="badge bg-danger" th:text="${b.overdueDays} + ' ngày'">1 ngày</span></td>
+                                <td>
+                                    <a th:href="@{/borrowings/{id}/return(id=${b.borrowingId})}" class="btn btn-sm btn-outline-danger">Trả sách</a>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(recentOverdue)}">
+                                <td colspan="5" class="text-center text-muted py-3"><i class="fa-solid fa-circle-check text-success me-1"></i> Không có phiếu mượn nào bị quá hạn.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Books -->
+        <div class="col-lg-5">
+            <div class="card p-3 shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-fire text-warning me-2"></i>Top Sách Mượn Nhiều Nhất</h5>
+                    <a href="/reports/top-books" class="btn btn-sm btn-link text-decoration-none">Xem thêm</a>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li th:each="tb, stat : ${topBooks}" class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-light text-dark border fw-bold" th:text="${stat.count}">1</span>
+                            <div>
+                                <div class="fw-semibold text-truncate" style="max-width: 200px;" th:text="${tb.title}">Sách</div>
+                                <div class="small text-muted" th:text="${tb.isbn}">ISBN</div>
+                            </div>
+                        </div>
+                        <span class="badge bg-primary rounded-pill" th:text="${tb.totalBorrowed} + ' lượt'">0 lượt</span>
+                    </li>
+                    <li th:if="${#lists.isEmpty(topBooks)}" class="list-group-item text-center text-muted py-3">Chưa có dữ liệu mượn.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

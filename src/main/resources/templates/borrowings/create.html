@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('Lập Phiếu Mượn Sách', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="card shadow-sm p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="fw-bold mb-0">Lập Phiếu Mượn Sách Mới</h4>
+                    <a href="/borrowings" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Quay lại</a>
+                </div>
+                <hr>
+
+                <form th:action="@{/borrowings}" th:object="${borrowingRequest}" method="post">
+                    <!-- Choose Member -->
+                    <div class="mb-4">
+                        <label for="memberId" class="form-label fw-semibold fs-5">1. Chọn Thành Viên Mượn Sách <span class="text-danger">*</span></label>
+                        <select th:field="*{memberId}" class="form-select form-select-lg" id="memberId" th:classappend="${#fields.hasErrors('memberId')} ? 'is-invalid' : ''">
+                            <option value="">-- Chọn thành viên (Chỉ hiển thị thành viên ACTIVE) --</option>
+                            <option th:each="m : ${members}" th:value="${m.id}" th:text="${m.fullName} + ' (' + ${m.email} + ')'"></option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('memberId')}" th:errors="*{memberId}">Vui lòng chọn thành viên</div>
+                    </div>
+
+                    <!-- Book Items -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-semibold fs-5 mb-0">2. Danh Sách Sách Đăng Ký Mượn <span class="text-danger">*</span></label>
+                            <button type="button" class="btn btn-sm btn-outline-primary btn-custom" id="addBookBtn">
+                                <i class="fa-solid fa-plus me-1"></i> Thêm Dòng Sách
+                            </button>
+                        </div>
+
+                        <div id="itemsContainer">
+                            <div th:each="item, stat : *{items}" class="row g-2 mb-2 align-items-center item-row">
+                                <div class="col-md-7">
+                                    <select th:field="*{items[__${stat.index}__].bookId}" class="form-select book-select" required>
+                                        <option value="">-- Chọn Cuốn Sách --</option>
+                                        <option th:each="b : ${books}" th:value="${b.id}" th:text="${b.title} + ' (Khả dụng: ' + ${b.availableQuantity} + ')'"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="number" th:field="*{items[__${stat.index}__].quantity}" class="form-control" min="1" placeholder="Số lượng" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-outline-danger btn-sm w-100 remove-btn" onclick="removeRow(this)">
+                                        <i class="fa-solid fa-trash"></i> Xóa
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info border-0 shadow-sm d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-circle-info fa-lg"></i>
+                        <div>Hạn trả mặc định sẽ là <strong>14 ngày</strong> kể từ hôm nay. Tồn kho sẽ tự động được trừ khi lập phiếu mượn thành công.</div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg btn-custom">
+                            <i class="fa-solid fa-paper-plane me-1"></i> Tạo Phiếu Mượn
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script for Dynamic Row Addition -->
+    <script th:inline="javascript">
+        let rowIndex = /*[[${#lists.size(borrowingRequest.items)}]]*/ 1;
+        const booksList = /*[[${books}]]*/ [];
+
+        document.getElementById('addBookBtn').addEventListener('click', function() {
+            const container = document.getElementById('itemsContainer');
+            const newRow = document.createElement('div');
+            newRow.className = 'row g-2 mb-2 align-items-center item-row';
+
+            let optionsHtml = '<option value="">-- Chọn Cuốn Sách --</option>';
+            booksList.forEach(b => {
+                optionsHtml += `<option value="${b.id}">${b.title} (Khả dụng: ${b.availableQuantity})</option>`;
+            });
+
+            newRow.innerHTML = `
+                <div class="col-md-7">
+                    <select name="items[${rowIndex}].bookId" class="form-select book-select" required>
+                        ${optionsHtml}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="number" name="items[${rowIndex}].quantity" class="form-control" value="1" min="1" placeholder="Số lượng" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-outline-danger btn-sm w-100 remove-btn" onclick="removeRow(this)">
+                        <i class="fa-solid fa-trash"></i> Xóa
+                    </button>
+                </div>
+            `;
+            container.appendChild(newRow);
+            rowIndex++;
+        });
+
+        function removeRow(btn) {
+            const rows = document.querySelectorAll('.item-row');
+            if (rows.length > 1) {
+                btn.closest('.item-row').remove();
+            } else {
+                alert('Phiếu mượn phải chứa ít nhất 1 cuốn sách!');
+            }
+        }
+    </script>
+</div>
+</body>
+</html>

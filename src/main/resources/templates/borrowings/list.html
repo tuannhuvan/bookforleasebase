@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('Quản Lý Mượn/Trả Sách', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">Quản Lý Phiếu Mượn / Trả Sách</h3>
+            <p class="text-muted">Lập phiếu mượn, theo dõi hạn trả 14 ngày và tính phí phạt quá hạn 5k/ngày</p>
+        </div>
+        <a href="/borrowings/new" class="btn btn-primary btn-custom">
+            <i class="fa-solid fa-plus me-1"></i> Lập Phiếu Mượn Mới
+        </a>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card shadow-sm p-3 mb-4">
+        <form th:action="@{/borrowings}" method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="Tìm theo tên/email thành viên...">
+            </div>
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">-- Lọc theo Trạng Thái Phiếu --</option>
+                    <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}" th:selected="${st == status}"></option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-1">
+                <button type="submit" class="btn btn-primary btn-custom flex-grow-1"><i class="fa-solid fa-filter me-1"></i> Lọc</button>
+                <a href="/borrowings" class="btn btn-outline-secondary btn-custom"><i class="fa-solid fa-rotate-left"></i></a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table Card -->
+    <div class="card shadow-sm p-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#Mã Phiếu</th>
+                        <th>Thành Viên</th>
+                        <th>Ngày Mượn</th>
+                        <th>Hạn Trả</th>
+                        <th>Ngày Trả Thức Tế</th>
+                        <th>Trạng Thái</th>
+                        <th>Phạt Quá Hạn</th>
+                        <th class="text-end">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="b : ${borrowingPage.content}">
+                        <td class="fw-bold" th:text="'#' + ${b.id}">#1</td>
+                        <td>
+                            <div class="fw-semibold" th:text="${b.memberName}">Tên</div>
+                            <div class="small text-muted" th:text="${b.memberEmail}">Email</div>
+                        </td>
+                        <td th:text="${#temporals.format(b.borrowDate, 'dd/MM/yyyy')}">Ngày mượn</td>
+                        <td th:text="${#temporals.format(b.dueDate, 'dd/MM/yyyy')}">Hạn trả</td>
+                        <td th:text="${b.returnedDate != null ? #temporals.format(b.returnedDate, 'dd/MM/yyyy') : '—'}">—</td>
+                        <td>
+                            <span th:if="${b.status.name() == 'BORROWED'}" class="badge bg-primary">ĐANG MƯỢN</span>
+                            <span th:if="${b.status.name() == 'PARTIAL_RETURNED'}" class="badge bg-info text-dark">TRẢ TỪNG PHẦN</span>
+                            <span th:if="${b.status.name() == 'RETURNED'}" class="badge bg-success">ĐÃ TRẢ HẾT</span>
+                            <span th:if="${b.status.name() == 'OVERDUE'}" class="badge bg-danger">QUÁ HẠN</span>
+                        </td>
+                        <td>
+                            <span class="fw-bold" th:classappend="${b.totalFine > 0} ? 'text-danger' : 'text-muted'"
+                                  th:text="${#numbers.formatDecimal(b.totalFine, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</span>
+                        </td>
+                        <td class="text-end">
+                            <a th:href="@{/borrowings/{id}(id=${b.id})}" class="btn btn-sm btn-outline-info me-1"><i class="fa-solid fa-eye"></i> Chi tiết</a>
+                            <a th:if="${b.status.name() != 'RETURNED'}" th:href="@{/borrowings/{id}/return(id=${b.id})}" class="btn btn-sm btn-outline-success"><i class="fa-solid fa-rotate-left"></i> Trả sách</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${borrowingPage.totalElements == 0}">
+                        <td colspan="8" class="text-center text-muted py-4">Chưa có phiếu mượn nào.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${borrowingPage.totalPages > 1}" class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+            <span class="small text-muted" th:text="'Trang ' + (${borrowingPage.number} + 1) + ' / ' + ${borrowingPage.totalPages}"></span>
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item" th:classappend="${borrowingPage.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/borrowings(page=${borrowingPage.number - 1}, keyword=${keyword}, status=${status})}">Trước</a>
+                </li>
+                <li th:each="i : ${#numbers.sequence(0, borrowingPage.totalPages - 1)}" class="page-item" th:classappend="${i == borrowingPage.number} ? 'active'">
+                    <a class="page-link" th:href="@{/borrowings(page=${i}, keyword=${keyword}, status=${status})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${borrowingPage.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/borrowings(page=${borrowingPage.number + 1}, keyword=${keyword}, status=${status})}">Sau</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>
